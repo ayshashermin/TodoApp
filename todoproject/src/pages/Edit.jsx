@@ -6,22 +6,31 @@ import { getTodo } from '../apifetch/fetchApi';
 import { editTodo } from '../apifetch/fetchApi';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import '../pages/Edit.css'
+import Header from './Header';
+import Aos from 'aos'
+import 'aos/dist/aos.css'
 
 const Edit = () => {
 
   const [todo,setTodo]=useState({
     Title:"",description:""
   })
-
+   
+  const header={
+    "Authorization":`Token ${sessionStorage.getItem('token')}`,
+    "Content-Type":"application/json"
+  }
 
      const{id}=useParams()
 
     const navigate=useNavigate()
 
      useEffect(()=>{
-      getTodo(id).then((res)=>{
+      getTodo(id,header).then((res)=>{
         console.log(res);
         setTodo(res.data)
+         Aos.init({duration:1000})
       })
      },[])
 
@@ -32,49 +41,43 @@ const Edit = () => {
 
         }
         else{
-            editTodo(id,todo).then((res)=>{
+            editTodo(id,todo,header).then((res)=>{
                 console.log(res);
             })
             toast("todo data updated")
-            navigate('/')
+            navigate('/userhome')
         }
     }
+    
 
   return (
     <div>
-        <div
-  className="max-w-md mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12"
- style={{"marginTop":"140px"}}>
-  <h2 className="text-2xl text-sky-900 font-bold mb-6">Update Your Todo</h2>
-
-  <form method="post" action="#">
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-600" htmlFor="name"
-        >Task</label
-      >
-      <input className="mt-1 p-2 w-full border rounded-md" type="text" onChange={(e)=>(setTodo({...todo,Title:e.target.value}))}  value={todo.Title}/>
+      <Header/>
+        <div class="contain" data-aos="fade-down">
+  <div class="login-card">
+    <div class="login-card-header">
+      <h2>Edit Todo</h2>
     </div>
-
-
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-600" htmlFor="bio"
-        >Description</label
-      >
-      <textarea
+    <div class="login-card-body">
+      <form>
+        <div class="form-group">
+          <label for="username">Title</label>
+          <input type="text" id="Title" name="Title" required onChange={(e)=>(setTodo({...todo,Title:e.target.value}))}  value={todo.Title}/>
+        </div>
+        <div class="form-group">
+          <label for="username">Description</label>
+          <textarea
         className="mt-1 p-2 w-full border rounded-md"
         rows="3"
-        name="bio"
-        id="bio"
+        name="Description"
+        id="Description"
         onChange={(e)=>(setTodo({...todo,description:e.target.value}))}  value={todo.description}
       ></textarea>
+        </div>
+        <button type="submit" class="login-btn" onClick={updateTodo}>Update</button>
+      </form>
     </div>
-
-    <div className="flex justify-end">
-      <button
-        className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-        type="submit" onClick={updateTodo}>Update </button>
-    </div>
-  </form>
+  </div>
 </div>
     </div>
   )

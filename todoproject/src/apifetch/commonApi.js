@@ -1,12 +1,17 @@
 import axios from 'axios'
 
-const commonApi=(reqUrl,reqMethod,reqData)=>{
-    const config={
-        headers:{"Content-Type":"application/json"},
-        method:reqMethod,
-        url:reqUrl,
-        data:reqData
+const commonApi = (reqUrl, reqMethod, reqData, header = {}) => {
+  const config = {
+    method: reqMethod,
+    url: reqUrl,
+    data: reqData,
+    headers: {
+      "Content-Type": "application/json", 
+      ...header                          
     }
-    return axios(config)
+  }
+
+  return axios(config)
 }
-export default commonApi 
+
+export default commonApi

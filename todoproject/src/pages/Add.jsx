@@ -5,9 +5,17 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { addNewTodo } from '../apifetch/fetchApi';
 import { useNavigate } from 'react-router-dom';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
+import '../pages/add.css'
+import Aos from 'aos'
+import 'aos/dist/aos.css'
+import { useEffect } from 'react';
 
 
-const Add = () => {
+const Add = ({onTodoAdded}) => {
 
   const [addTodo,setAddTodo]=useState({
     Title:"",description:""
@@ -22,51 +30,71 @@ const Add = () => {
         toast("invalid input")
     }
     else{
-        addNewTodo(addTodo).then((res)=>{
+      const header={
+        "Authorization":`Token ${sessionStorage.getItem('token')}`,
+        "Content-Type":"application/json"
+      }
+        addNewTodo(addTodo,header).then((res)=>{
             console.log(res);
             toast("Todo added")
-            navigate("/")
+            handleClose()
+             console.log("Todo added, calling onTodoAdded");
+             if (onTodoAdded) onTodoAdded(); 
         })
     }
         
   }
+
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
+
+     useEffect(()=>{
+    Aos.init({duration:2000})
+  },[])
   return (
     <div>
         
-         <div
-  className="max-w-md mx-auto relative overflow-hidden z-10 bg-white p-8 rounded-lg shadow-md before:w-24 before:h-24 before:absolute before:bg-purple-500 before:rounded-full before:-z-10 before:blur-2xl after:w-32 after:h-32 after:absolute after:bg-sky-400 after:rounded-full after:-z-10 after:blur-xl after:top-24 after:-right-12"
- style={{"marginTop":"140px"}}>
-  <h2 className="text-2xl text-sky-900 font-bold mb-6">Add Your Todo</h2>
+<button class="cssbuttons-io-button mt-5" onClick={handleShow} style={{"marginLeft":"1100px"}}  data-aos="zoom-in">
+  <svg
+    height="24"
+    width="24"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M0 0h24v24H0z" fill="none"></path>
+    <path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z" fill="currentColor"></path>
+  </svg>
+  <span>Add Todo </span>
+</button>
 
-  <form method="post" action="#">
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-600" htmlFor="name"
-        >Task</label
-      >
-      <input className="mt-1 p-2 w-full border rounded-md" type="text" onChange={(e)=>(setAddTodo({...addTodo,Title:e.target.value}))} />
-    </div>
 
 
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-600" htmlFor="bio"
-        >Description</label
-      >
-      <textarea
-        className="mt-1 p-2 w-full border rounded-md"
-        rows="3"
-        name="bio"
-        id="bio"
-        onChange={(e)=>(setAddTodo({...addTodo,description:e.target.value}))}
-      ></textarea>
-    </div>
+        <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Todo</Modal.Title>
+        </Modal.Header>
 
-    <div className="flex justify-end">
-      <button
-        className="[background:linear-gradient(144deg,#af40ff,#5b42f3_50%,#00ddeb)] text-white px-4 py-2 font-bold rounded-md hover:opacity-80"
-        type="submit" onClick={saveData}> Add</button>
-    </div>
-  </form>
-</div>
+        <Modal.Body>
+        <FloatingLabel controlId="floatingTitle"label="Title"className="mb-3">
+        <Form.Control type="text" placeholder="Title1"  onChange={(e)=>{setAddTodo({...addTodo,Title:e.target.value})}}/>
+      </FloatingLabel>
+      <FloatingLabel controlId="floatingContent" label="Description">
+        <Form.Control type="text" placeholder="content1" onChange={(e)=>{setAddTodo({...addTodo,description:e.target.value})}}/>
+      </FloatingLabel>   
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="danger" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="success" onClick={saveData}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
 
     </div>
   )

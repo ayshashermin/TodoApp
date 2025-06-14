@@ -1,107 +1,124 @@
 import React from 'react'
 import Header from './Header'
-import Footer from './Footer'
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import { Link } from 'react-router-dom';
 import './Home.css'
 import { useEffect } from 'react';
 import { getAllTodo } from '../apifetch/fetchApi';
 import { useState } from 'react';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { deletetodo } from '../apifetch/fetchApi';
+import SideBar from './SideBar';
+import Dashboard from './Dashboard';
 
 
 const Home = () => {
 
-    const [todo,setTodo]=useState([])
+  const [todo, setTodo] = useState([])
 
-  const navigate=useNavigate()
-
-
-
-  useEffect(()=>{
-    getAllTodo().then((result)=>{
-      console.log(result);
-      setTodo(result.data)
-      
-    })
-
-  },[])
-  console.log(todo);
-
-   const deleteTodos=(id)=>{
-    console.log(id);
-    deletetodo(id).then((res)=>{
-      console.log(res);
-    })
-    toast("todo deleted")
-    navigate("/")
-    
-
+  const navigate = useNavigate()
+  const header = {
+    "Authorization": `Token ${sessionStorage.getItem('token')}`,
+    "Content-Type": "application/json"
   }
 
-  
-  
+
+
+  useEffect(() => {
+    getAllTodo(header)
+      .then((result) => {
+        setTodo(result.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to fetch todos. Please login again.");
+        navigate('/'); // go to login
+      });
+  }, []);
+  console.log(todo);
+
+  const deleteTodos = (id) => {
+    deletetodo(id, header)
+      .then((res) => {
+        toast.success("Todo deleted");
+        getAllTodo(header).then((result) => setTodo(result.data)); // refresh
+      })
+      .catch((err) => {
+        toast.error("Failed to delete todo");
+        console.error("Delete error:", err);
+      });
+  };
+
+
+
+
 
   return (
     <div>
-         <Header/>
-       
-    <Container>
-       <h1 className='text-center mt-5 'style={{'textShadow':'2px 2px 2px black'}}>TODO LIST</h1>
-    
-      <Row>
-        <Col md={12}>
-        
-        <table className='table table-bordered table-hover table-striped table-info mt-5'>
-          <thead>
-            <tr>
-                <th>ID</th>
-                <th>Tasks</th>
-                <th>Description</th>
-                <th>Date</th>
-                <th>Action</th>
-                
-                
-            </tr>
-            </thead>
-            <tbody className='mt-4'>
-              {
-                todo.length >0 ?
-                todo.map((stud)=>(
-                  
-                  <tr>
-                      <td>{stud.id}</td>
-                      <td>{stud.Title}</td>
-                      <td>{stud.description}</td>
-                      <td>{stud.date}</td>
-                
-                      <td><Link to={`edit/${stud.id}`} className='btn btn-outline-warning'>Edit</Link> 
-                      <button class="btn btn-outline-danger" onClick={()=>(deleteTodos(`${stud.id}`))} style={{"marginLeft":"10px"}}>delete</button >
- 
-</td>
-                 </tr>
-                 
 
 
-                 ))
-                : <h1>no todos</h1>
-              } 
-             </tbody>
+      <div className='admin-container'>
+        <div className='main-content'>
+          <SideBar />
+          <Dashboard/>
+          <div className='table-wrapper'>
+            <table className='table table-bordered table-hover table-striped table-info mt-5'>
+              <thead>
+                <tr>
+                  <th className='t1'>ID</th>
+                  <th className='t1'>Name</th>
+                  <th className='t1'>Tasks</th>
+                  <th className='t1'>Description</th>
+                  <th className='t1'>Date</th>
+                  <th className='t1'>Action</th>
+
+
+                </tr>
+              </thead>
+              <tbody className='mt-4'>
+                {
+                  todo.length > 0 ?
+                    todo.map((stud) => (
+
+                      <tr key={stud.id}>
+                        <td>{stud.id}</td>
+                        <td>{stud.user}</td>
+                        <td>{stud.Title}</td>
+                        <td>{stud.description}</td>
+                        <td>{stud.date}</td>
+
+                        <td>
+                          <button
+                            className="btn btn-outline-danger"
+                            onClick={() => deleteTodos(stud.id)}
+                            style={{ marginLeft: "10px" }}
+                          >
+                            Delete
+                          </button>
+
+                        </td>
+                      </tr>
 
 
 
-           
-        </table>
-        
-        </Col>
-      </Row>
-    </Container>
+                    ))
+                    : (
+                      <tr>
+                        <td colSpan="6" className="text-center text-danger">No todos found</td>
+                      </tr>
+                    )
+                }
+              </tbody>
 
-      <Footer/>
+
+
+
+            </table>
+          </div>
+        </div>
+      </div>
+
+
     </div>
   )
 }
